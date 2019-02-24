@@ -2,7 +2,6 @@
 
 # PASSWORDS CREATION SCRIPT.
 
-
 set -x  # DEBUG TOGGLE
 
 #1 To create 15 characters long passwords containing A-Z a-z 0-9 I choose to use random
@@ -15,25 +14,35 @@ set -x  # DEBUG TOGGLE
 # one mebibyte(1MiB)  = 1048576 bytes
 # each 15 char password line adds 16 bytes, so 1048576/16=65536 lines for 1MiB file
 
-cat /dev/urandom |tr -dc 'A-Za-z0-9'|fold -w 15|head -n 65536 >>passes
+cat /dev/urandom |tr -dc 'A-Za-z0-9'|fold -w 15|head -n 65536 >passes
 
 # ALTERNATIVE WAY: ADDING PASSWORDS THROUGH ITERATIONS UNTIL FILE SIZE REACH VALUE
 # STORED IN $passes_max_size using: wc, stat, ls or du commands.
 
 #passes_size=0
-# Set amount of bytes to control size of `passes` file.
+# Set amount of bytes to control size of "passes" file.
 #passes_max_size=1000
 #while [[ "$passes_size" -lt "$passes_max_size" ]]
 #do
-    #cat /dev/urandom |tr -dc 'A-Za-z0-9'|fold -w 15|head -n 1 >>passes
-    #passes_size=$(wc -c passes|cut -d " " -f 1)
-    #passes_size=$(stat -c %s passes)
-    #passes_size=$(ls -l passes|cut -d " " -f 5)
-    #passes_size=$(du -b passes|cut -f 1)
-    #echo "$passes_size"/"$passes_max_size"
+#    cat /dev/urandom |tr -dc 'A-Za-z0-9'|fold -w 15|head -n 1 >>passes
+#    passes_size=$(wc -c passes|cut -d " " -f 1)
+#    passes_size=$(stat -c %s passes)
+#    passes_size=$(ls -l passes|cut -d " " -f 5)
+#    passes_size=$(du -b passes|cut -f 1)
+#    echo "$passes_size"/"$passes_max_size"
 #done
 
+# SORTING PASSWORD FILE
+# Most common command to sort file in Linux is "sort"
+# The  locale specified by the environment affects sort
+# order.  Set LC_ALL=C to get the traditional sort order that uses  native
+# byte values.: default sorting order: 0-9A-Z-a-z (US-ASCII)
+
+# Default sorting of passes file prepares it for later removal of lines starting with "a"
+LC_ALL=C sort -o passes passes
+
+# REMOVING LINES STARTING WITH "A"or "a" and saving the result into new file passwords
+
+
 set +x  # DEBUG TOGGLE
-
-
 
