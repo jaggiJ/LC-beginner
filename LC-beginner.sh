@@ -2,22 +2,21 @@
 
 # PASSWORDS CREATION SCRIPT.
 
-set -x  # DEBUG TOGGLE
-
-#1 To create 15 characters long passwords containing A-Z a-z 0-9 I choose to use random
-#  data generated in /dev/urandom as fast and sufficient for the task. I remove all
-#  characters from it except desired using `tr -dc`. I use `fold -w 15` to keep generated
-#  output to 15 characters long per line.
-#2 Now I can decide size of a file that will contain my passwords. 15 character long line
-
-# INSTANTLY CREATE FILE WITH RANDOM PASSWORDS OF 1MiB SIZE
-# one mebibyte(1MiB)  = 1048576 bytes
-# each 15 char password line adds 16 bytes, so 1048576/16=65536 lines for 1MiB file
+#1 INSTANTLY CREATE FILE WITH RANDOM PASSWORDS OF 1MiB SIZE To create 15
+#  characters long passwords containing A-Z a-z 0-9 I choose to use random data
+#  generated in /dev/urandom as fast and sufficient for the task. I remove all
+#  characters from it except desired using `tr -dc`. I use `fold -w 15` to keep
+#  generated output to 15 characters long per line. 
+#2 One mebibyte(1MiB) = 1048576 bytes.
+#  Each 15 char password line adds 16 bytes, so 1048576/16=65536 lines for
+#  total size of 1MiB.
 
 cat /dev/urandom |tr -dc 'A-Za-z0-9'|fold -w 15|head -n 65536 >passes
+echo Created \'passes\' file containing "$(wc -l passes|cut -d" " -f1)"\
+      passwords.
 
-# ALTERNATIVE WAY: ADDING PASSWORDS THROUGH ITERATIONS UNTIL FILE SIZE REACH VALUE
-# STORED IN $passes_max_size using: wc, stat, ls or du commands.
+# ALTERNATIVE WAY: ADDING PASSWORDS THROUGH ITERATIONS UNTIL FILE SIZE REACH
+# VALUE STORED IN $passes_max_size using: wc, stat, ls or du commands.
 
 #passes_size=0
 # Set amount of bytes to control size of "passes" file.
@@ -32,17 +31,31 @@ cat /dev/urandom |tr -dc 'A-Za-z0-9'|fold -w 15|head -n 65536 >passes
 #    echo "$passes_size"/"$passes_max_size"
 #done
 
-# SORTING PASSWORD FILE
+#3 SORTING PASSWORD FILE
 # Most common command to sort file in Linux is "sort"
 # The  locale specified by the environment affects sort
 # order.  Set LC_ALL=C to get the traditional sort order that uses  native
 # byte values.: default sorting order: 0-9A-Z-a-z (US-ASCII)
-
-# Default sorting of passes file prepares it for later removal of lines starting with "a"
+# I go with default sorting. It lets me check for presence of any duplicates
+# with 'uniq -d'. Sort with '-o' let me save result in place (as same file).
 LC_ALL=C sort -o passes passes
+echo File \'passes\' sorted with default US-ASCII order.
 
-# REMOVING LINES STARTING WITH "A"or "a" and saving the result into new file passwords
+#4 REMOVING LINES STARTING WITH "A"or "a" and saving the result into new file
+#  'passwords'.
+#  'grep -v' prints all except lines provided with patterns preceded by '-e'.
+#  Output redirected into 'passwords' file.
+grep -v -e "^A" -e "a" passes > passwords
+echo Passwords starting with \'A\' or \'a\' are removed. Result saved in \
+      \'passwords\' file.
 
-
-set +x  # DEBUG TOGGLE
+#5 HOW MANY LINES WERE REMOVED ? Using cut with delimiter set for whitespace let
+#  me output numeric value alone. Operation done on output of 'wc -l ' command
+#  generates number of lines in a file. I seek here for difference between
+#  number of lines between two of my password files. This is the number of
+#  removed passwords in previous step. I store it in a variable
+#  'lines_difference'.
+lines_difference=$(( $(wc -l passes|cut -d" " -f1)\
+                         -$(wc -l passwords|cut -d" " -f1) ))
+echo Total of "$lines_difference" passwords were removed.
 
