@@ -21,24 +21,24 @@
 
 # Backup old files if present.
 [[ -f passes ]] && mv passes backup-passes && echo Made backup of old \
-                \"passes\" into \"backup-passes\" && echo Press a key && read
+                \"passes\" into \"backup-passes\" && echo Press a key && read -r
 
-[[ -f passwords ]] && mv passwords backup-passwords && echo Made backup of old \
-                      \"passwords\" && echo Press a key && read
+[[ -f passwords ]] && mv passwords backup-passwords \
+    && echo Made backup of old '"passwords"' into '"backup-passwords"' \
+    && echo Press a key && read -r
 
 # Main part of script, password file creation with size control.
 
 size=0
-while [[ size -lt 1048576 ]]
-do
-    LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom |fold -w 15|grep [[:upper:]]\
-        |grep [[:lower:]]|grep [[:digit:]]|head -n 256 >> passes
+while [[ size -lt 1048576 ]] ; do
+    LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom |fold -w 15|grep "[[:upper:]]"\
+        |grep "[[:lower:]]"|grep "[[:digit:]]"|head -n 256 >> passes
     size=$(wc -c passes|cut -d" " -f1)
     echo "$size"/1048576 bytes created
 done
 
 if [[ $(wc -c passes|cut -d" " -f1) -eq 1048576 ]] ; then
-    echo Successfully created file of size: $(du -h passes)
+    echo Successfully created file of size: "$(du -h passes)"
 else
     echo Something went not as expected. Check if created file size is equal \
          to 1048576 bytes.
@@ -59,24 +59,25 @@ size=$(wc -l passes|cut -d" " -f1)
 LC_ALL=C sort -Ruo passes passes
 size2=$(wc -l passes|cut -d" " -f1)
 echo Passwords sorted with random order.
-[[ ! $size2 -eq $size ]] && echo Number of duplicates found and removed: \
-                                 $(( "$size"-"$size2" ))
+[[ ! $size2 -eq $size ]] \
+    && echo Number of duplicates found and removed: "$(( size-size2 ))"
 
-#4 REMOVING LINES STARTING WITH "A"or "a" and saving the result into new file
-#  'passwords'.
+#4 REMOVING LINES STARTING WITH 'A'or 'a' USING REGULAR EXPRESSIONS
+#  Result saved into new file 'passwords'.
 #  'grep -v' prints all except lines provided with patterns preceded by '-e'.
 #  Output redirected into 'passwords' file.
-#grep -v -e "^A" -e "a" passes > passwords
-    #echo Passwords starting with \'A\' or \'a\' are removed. Result saved in \
-        #\'passwords\' file.
-#
-#5 HOW MANY LINES WERE REMOVED ? Using cut with delimiter set for whitespace let
-#  me output numeric value alone. Operation done on output of 'wc -l ' command
-#  generates number of lines in a file. I seek here for difference between
-#  number of lines between two of my password files. This is the number of
-#  removed passwords in previous step. I store it in a variable
-#  'lines_difference'.
-#lines_difference=$(( $(wc -l passes|cut -d" " -f1)\
-#                         -$(wc -l passwords|cut -d" " -f1) ))
-#echo Total of "$lines_difference" passwords were removed.
 
+#grep -v -e "^A" -e "^a" passes > passwords
+#echo Removing passwords starting with '"A"' or '"a"'.
+#echo ... && sleep 1 && echo Result saved in '"passwords"' file.
+
+#5 HOW MANY LINES WERE REMOVED ?
+#  Using cut with delimiter set for whitespace let me output numeric value
+#  alone. Operation done on output of 'wc -l ' command generates number of
+#  lines in a file. I seek here for difference between number of lines between
+#  two of my password files. This is the number of removed passwords in
+#  previous step. I store it in a variable 'lines_difference'.
+
+#size_final=$(wc -l passwords|cut -d" " -f1)
+#lines_difference=$(( size2-size_final ))
+#echo Total of "$lines_difference" passwords were removed out of "$size2"
