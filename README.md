@@ -54,3 +54,4 @@ Passwords are created in batches of 256 until file size reaches set limit 1MiB.
 # the number of removed passwords in previous step. I store it in a variable
 # 'lines_difference'.
 ```
+![example_pass](https://user-images.githubusercontent.com/18056024/120233934-2db96480-c257-11eb-8aaf-7cc87ddc9aac.jpg)
